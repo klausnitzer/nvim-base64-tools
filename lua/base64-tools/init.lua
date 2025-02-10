@@ -5,6 +5,12 @@ local is_mac = vim.loop.os_uname().sysname == "Darwin"
 
 -- Helper function to get the selected text
 local function get_selected_text()
+  -- Ensure buffer is not empty
+  if vim.api.nvim_buf_line_count(0) == 1 and vim.api.nvim_buf_get_lines(0, 0, 1, false)[1] == "" then
+    vim.notify("Buffer is empty. Nothing to encode/decode.", vim.log.levels.WARN)
+    return nil
+  end
+
   local mode = vim.fn.mode()   -- Get current mode (v, V, <C-v>)
   local start_pos = vim.fn.getpos("'<")
   local end_pos = vim.fn.getpos("'>")
@@ -17,7 +23,7 @@ local function get_selected_text()
   -- Fix for line-wise selection
   if mode == "V" then
     start_col = 0
-    end_col = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1]     -- Full line length
+    end_col = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1]
   end
 
   -- Ensure start_col is always less than end_col
@@ -27,7 +33,6 @@ local function get_selected_text()
 
   -- Get selected text safely
   local lines = vim.api.nvim_buf_get_text(0, start_line, start_col, end_line, end_col, {})
-
   if not lines or #lines == 0 then
     vim.notify("No text selected.", vim.log.levels.WARN)
     return nil
@@ -45,6 +50,32 @@ local function replace_selected_text(start_line, start_col, end_line, end_col, n
   end
 end
 
+-- Function to encode the whole file (without selection)
+M.base64_encode_file = function()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local text = table.concat(lines, "\n")
+
+  -- Encode: Handle macOS/Linux
+  local command = is_mac and "base64" or "base64 -w 0"
+  local encoded = vim.fn.system(command, text):gsub("\n", "")
+
+  -- Replace the entire buffer's content with the encoded text
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.fn.split(encoded, "\n"))
+end
+
+-- Function to decode the whole file (without selection)
+M.base64_decode_file = function()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local text = table.concat(lines, "\n")
+
+  -- Decode: Handle macOS/Linux
+  local decoded = vim.fn.system("base64 -d", text)
+
+  -- Replace the entire buffer's content with the decoded text
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.fn.split(decoded, "\n"))
+end
+
+-- Function to encode selected text
 M.base64_encode = function()
   local text, start_line, start_col, end_line, end_col = get_selected_text()
   if not text then return end
@@ -56,6 +87,7 @@ M.base64_encode = function()
   replace_selected_text(start_line, start_col, end_line, end_col, encoded)
 end
 
+-- Function to decode selected text
 M.base64_decode = function()
   local text, start_line, start_col, end_line, end_col = get_selected_text()
   if not text then return end
