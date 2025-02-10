@@ -10,6 +10,12 @@ M.base64_encode = function()
   local end_line = end_pos[2] - 1
   local end_col = end_pos[3]
 
+  -- Ensure end_col does not exceed the line length
+  local last_line_length = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1] or 0
+  if end_col > last_line_length then
+    end_col = last_line_length
+  end
+
   -- Get selected text
   local lines = vim.api.nvim_buf_get_text(0, start_line, start_col, end_line, end_col, {})
   local text = table.concat(lines, "\n")
@@ -36,6 +42,12 @@ M.base64_decode = function()
   local end_line = end_pos[2] - 1
   local end_col = end_pos[3]
 
+  -- Ensure end_col does not exceed the line length
+  local last_line_length = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1] or 0
+  if end_col > last_line_length then
+    end_col = last_line_length
+  end
+
   -- Get selected text
   local lines = vim.api.nvim_buf_get_text(0, start_line, start_col, end_line, end_col, {})
   local text = table.concat(lines, "\n")
@@ -53,4 +65,3 @@ M.base64_decode = function()
 end
 
 return M
-
