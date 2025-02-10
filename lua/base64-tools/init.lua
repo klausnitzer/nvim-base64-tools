@@ -10,6 +10,11 @@ M.base64_encode = function()
   local end_line = end_pos[2] - 1
   local end_col = end_pos[3]
 
+  -- Ensure end_col is at least one character ahead
+  if start_line == end_line and start_col == end_col then
+    end_col = end_col + 1
+  end
+
   -- Ensure end_col does not exceed the line length
   local last_line_length = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1] or 0
   if end_col > last_line_length then
@@ -42,6 +47,11 @@ M.base64_decode = function()
   local end_line = end_pos[2] - 1
   local end_col = end_pos[3]
 
+  -- Ensure end_col is at least one character ahead
+  if start_line == end_line and start_col == end_col then
+    end_col = end_col + 1
+  end
+
   -- Ensure end_col does not exceed the line length
   local last_line_length = #vim.api.nvim_buf_get_lines(0, end_line, end_line + 1, false)[1] or 0
   if end_col > last_line_length then
@@ -65,3 +75,4 @@ M.base64_decode = function()
 end
 
 return M
+
