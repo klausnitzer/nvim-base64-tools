@@ -11,7 +11,7 @@ local function get_selected_text()
     return nil
   end
 
-  local mode = vim.fn.mode()   -- Get current mode (v, V, <C-v>)
+  local mode = vim.fn.mode() -- Get current mode (v, V, <C-v>)
   local start_pos = vim.fn.getpos("'<")
   local end_pos = vim.fn.getpos("'>")
 
@@ -41,13 +41,19 @@ local function get_selected_text()
   return table.concat(lines, "\n"), start_line, start_col, end_line, end_col
 end
 
--- Helper function to replace selected text
-local function replace_selected_text(start_line, start_col, end_line, end_col, new_text)
-  if new_text and #new_text > 0 then
-    vim.api.nvim_buf_set_text(0, start_line, start_col, end_line, end_col, { new_text })
-  else
-    vim.notify("Failed to replace text. Output was empty.", vim.log.levels.ERROR)
+local function replace_selected_text(start_row, start_col, end_row, end_col, replacement)
+  local bufnr = vim.api.nvim_get_current_buf()
+
+  -- Adjust end_col for exclusive indexing
+  end_col = end_col + 1
+
+  -- Ensure end_col does not exceed line length
+  local line_length = vim.fn.col({ end_row + 1, '$' }) - 1
+  if end_col > line_length then
+    end_col = line_length
   end
+
+  vim.api.nvim_buf_set_text(bufnr, start_row, start_col, end_row, end_col, { replacement })
 end
 
 -- Function to encode the whole file (without selection)
