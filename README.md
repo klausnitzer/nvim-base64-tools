@@ -5,6 +5,8 @@ A simple Neovim plugin for Base64 encoding and decoding text.
 ## Features
 
 - Encode and decode selected text or entire files using Base64.
+- Decode Base64-encoded content directly from the system clipboard into a new buffer 
+
 
 ## Requirements
 
@@ -37,6 +39,11 @@ The plugin provides the following keybindings:
   - `<leader>bee`: Encode the entire file
   - `<leader>bdd`: Decode the entire file
 
+- **Decode clipboard funktion**:
+
+  - start vim 
+  - `:Base64DecodeClipboard`: Decode text from clipboard to new buffer
+ 
 These keybindings are defined in the plugin's [base64-tools.lua](https://github.com/klausnitzer/nvim-base64-tools/blob/main/plugin/base64-tools.lua) file:
  
 ```lua
@@ -53,8 +60,8 @@ vim.keymap.set('n', '<leader>bdd', function() base64.base64_decode_file() end, {
 
 You can customize these keybindings in your Neovim configuration as needed.
 
+
+
 ## License
 
 This plugin is licensed under the MIT License.
-
-
