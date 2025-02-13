@@ -105,23 +105,31 @@ M.base64_decode = function()
 end
 
 -- Function to decode clipboard content into a new buffer
+--
 M.decode_clipboard = function()
-  local encoded_text = vim.fn.getreg('+') -- Get clipboard content
-  if encoded_text == "" then
-    vim.notify("Clipboard is empty or not base64 encoded!", vim.log.levels.WARN)
+  -- Get clipboard contents
+  local clipboard_content = vim.fn.getreg("+")
+  if not clipboard_content or clipboard_content == "" then
+    vim.notify("Clipboard is empty.", vim.log.levels.WARN)
     return
   end
 
-  -- Decode: Handle macOS/Linux
-  local decoded_text = vim.fn.system("base64 -d", encoded_text)
+  -- Decode clipboard content
+  local decoded = vim.fn.system("base64 -d", clipboard_content)
 
-  -- Open a new buffer and insert the decoded text
-  vim.cmd("new")
-  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(decoded_text, "\n"))
+  -- Open a new unnamed buffer and insert the decoded content
+  vim.cmd("enew") -- Opens a new buffer
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(decoded, "\n"))
+
+  -- Optionally, set the buffer as scratch (prevents saving prompt)
+  vim.bo.buftype = "nofile"
+  vim.bo.bufhidden = "hide"
+  vim.bo.swapfile = false
+
+  vim.notify("Decoded clipboard content opened in new buffer.", vim.log.levels.INFO)
 end
 
 -- Register command for easy access
 vim.api.nvim_create_user_command("Base64DecodeClipboard", M.decode_clipboard, {})
 
 return M
-
