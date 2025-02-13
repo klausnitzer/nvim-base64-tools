@@ -104,5 +104,24 @@ M.base64_decode = function()
   replace_selected_text(start_line, start_col, end_line, end_col, decoded)
 end
 
+-- Function to decode clipboard content into a new buffer
+M.decode_clipboard = function()
+  local encoded_text = vim.fn.getreg('+') -- Get clipboard content
+  if encoded_text == "" then
+    vim.notify("Clipboard is empty or not base64 encoded!", vim.log.levels.WARN)
+    return
+  end
+
+  -- Decode: Handle macOS/Linux
+  local decoded_text = vim.fn.system("base64 -d", encoded_text)
+
+  -- Open a new buffer and insert the decoded text
+  vim.cmd("new")
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(decoded_text, "\n"))
+end
+
+-- Register command for easy access
+vim.api.nvim_create_user_command("Base64DecodeClipboard", M.decode_clipboard, {})
+
 return M
 
